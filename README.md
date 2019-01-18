@@ -31,3 +31,6 @@ It's really nice to be able to say "Alexa, lock all the doors".  Here's how:
 Congratulations.  You can now activate Lockdown by talking to Alexa.
 
 5. Add two more Alexa routines for "Lock the doors" and "Lock all doors", because occasionally Alexa will miss a word.
+
+## Recommended Scheduling
+I want to make sure all my doors are generally locked at night, even if someone steps outside momentarily in the middle of the night and forgets to lock the door after them.  Therefore, in Hubitat I create a scheduled Rule Machine rule that will turn on the Triggering Switch on the hour, each hour, during nighttime hours.
