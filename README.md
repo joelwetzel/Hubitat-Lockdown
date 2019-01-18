@@ -29,3 +29,5 @@ It's really nice to be able to say "Alexa, lock all the doors".  Here's how:
 4. Create a new Routine in the Alexa app.  Have it triggered when you say "Lock all the doors".  Have it turn on the virtual switch.
 
 Congratulations.  You can now activate Lockdown by talking to Alexa.
+
+5. Add two more Alexa routines for "Lock the doors" and "Lock all doors", because occasionally Alexa will miss a word.
