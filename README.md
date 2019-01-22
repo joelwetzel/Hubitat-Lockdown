@@ -1,4 +1,4 @@
-# Lockdown for Hubitat
+# Lockdown App for Hubitat
 An app for Hubitat (It will probably work with SmartThings too) that will reliably lock all selected locks when a specified switch is triggered.
 
 ## Reason for using Lockdown
