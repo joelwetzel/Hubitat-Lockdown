@@ -27,7 +27,7 @@ definition(
 def triggeringSwitch = [
 		name:				"triggeringSwitch",
 		type:				"capability.switch",
-		title:				"Switch",
+		title:				"Triggering Switch",
 		description:		"Select the switch that this app will watch.  When it triggers to on, the app will starting locking things.",
 		multiple:			false,
 		required:			true
@@ -39,15 +39,6 @@ def selectedLocks = [
 		title:				"Locks",
 		description:		"Select the locks that this app should manage.",
 		multiple:			true,
-		required:			true
-	]
-
-def refreshTime = [
-		name:				"refreshTime",
-		type:				"number",
-		title:				"Refresh Time",
-		description:		"Not all locks perfectly report status updates.  A manual refresh helps.  Set the amount of time to wait after sending a lock command, to send a followup refresh command. Recommend: 5",
-		defaultValue:		5,
 		required:			true
 	]
 
@@ -63,23 +54,42 @@ def cycleTime = [
 def maxCycles = [
 		name:				"maxCycles",
 		type:				"number",
-		title:				"Max Number of Retries",
-		description:		"Maximum number of lock/retry cycles.  Recommended value: double the amount of locks that you are managing.",
+		title:				"Max Number of Cycles",
+		description:		"Maximum number of lock/retry cycles.  Recommended value: 3X the amount of locks that you are managing.",
+		required:			true
+	]
+
+def forceRefresh = [
+		name:				"forceRefresh",
+		type:				"bool",
+		title:				"Force Refreshes after Locking?",
+		defaultValue:		true,
+		required:			true
+	]
+
+def refreshTime = [
+		name:				"refreshTime",
+		type:				"number",
+		title:				"Delay before Refresh",
+		description:		"Not all locks perfectly report status updates.  A manual refresh helps.  Set the amount of time to wait after sending a lock command, to send a followup refresh command. Recommend: 5",
+		defaultValue:		5,
 		required:			true
 	]
 
 
+
 preferences {
-	section("Triggering Switch") {
+	section("<b>Devices</b>") {
 		input triggeringSwitch
-	}
-	section("Locks") {
 		input selectedLocks	
 	}
-	section("Configuration") {
-		input refreshTime
+	section("<b>Cycles</b>") {
 		input cycleTime
 		input maxCycles
+	}
+	section("<b>Refreshes</b>") {
+		input forceRefresh
+		input refreshTime
 	}
 }
 
@@ -130,32 +140,36 @@ def cycleHandler () {
 
 	log.debug "CYCLE: ${state.numCycles}"
 
+	// Allow for cancellation
 	if (triggeringSwitch.currentValue('switch') == "off") {
 		log.debug "CANCELLED"
 		doneHandler()
 		return
 	}
 	
+	// Are there any unlocked locks?
 	def nextLockIndex = findNextIndex()
 	
+	// Are we finished?
 	if (nextLockIndex == -1) {
 		log.debug "ALL LOCKS ARE LOCKED"
 		doneHandler()
 		return
 	}
 
-	lockNext(nextLockIndex)
-}
-
-
-def lockNext(nextLockIndex) {
+	// Lock the next one
 	def nextLock = selectedLocks[nextLockIndex]
-	
 	log.debug "Attempting to lock: ${nextLock.displayName}"
 	nextLock.lock()
 
-	atomicState.nextLockIndex = nextLockIndex
-	runIn(refreshTime, refreshHandler)
+	// Start timer for the next cycle
+	runIn(cycleTime, cycleHandler)
+
+	// If we're doing refreshes, start a timer for the refresh delay
+	if (forceRefresh) {
+		atomicState.nextLockIndex = nextLockIndex
+		runIn(refreshTime, refreshHandler)
+	}
 }
 
 
@@ -164,8 +178,6 @@ def refreshHandler() {
 	
 	log.debug "Refreshing: ${nextLock.displayName}"
 	nextLock.refresh()
-	
-	runIn(cycleTime, cycleHandler)
 }
 
 
@@ -182,12 +194,18 @@ def findNextIndex() {
 	for (int i = 0; i < selectedLocks.size(); i++) {
 		def l = selectedLocks[i];
 		
-		if (l.currentValue('lock') == "unlocked") {
+		if (l.currentValue('lock') != "locked") {
 			return i
 		}
 	}
 	
 	return -1
 }
+
+
+
+
+
+
 
 
