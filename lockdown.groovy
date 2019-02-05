@@ -19,9 +19,9 @@ definition(
     author: "Joel Wetzel",
     description: "This will lock all selected locks when a specified switch is triggered.",
     category: "Safety & Security",
-	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
-    iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
+	iconUrl: "",
+    iconX2Url: "",
+    iconX3Url: "")
 
 
 def triggeringSwitch = [
@@ -33,6 +33,7 @@ def triggeringSwitch = [
 		required:			true
 	]
 
+
 def selectedLocks = [
 		name:				"selectedLocks",
 		type:				"capability.lock",
@@ -41,6 +42,7 @@ def selectedLocks = [
 		multiple:			true,
 		required:			true
 	]
+
 
 def cycleTime = [
 		name:				"cycleTime",
@@ -51,6 +53,7 @@ def cycleTime = [
 		required:			true
 	]
 
+
 def maxCycles = [
 		name:				"maxCycles",
 		type:				"number",
@@ -58,6 +61,7 @@ def maxCycles = [
 		description:		"Maximum number of lock/retry cycles.  Recommended value: 3X the amount of locks that you are managing.",
 		required:			true
 	]
+
 
 def forceRefresh = [
 		name:				"forceRefresh",
@@ -67,6 +71,7 @@ def forceRefresh = [
 		required:			true
 	]
 
+
 def refreshTime = [
 		name:				"refreshTime",
 		type:				"number",
@@ -75,7 +80,6 @@ def refreshTime = [
 		defaultValue:		5,
 		required:			true
 	]
-
 
 
 preferences {
@@ -95,14 +99,14 @@ preferences {
 
 
 def installed() {
-	log.debug "Installed with settings: ${settings}"
+	log.info "Installed with settings: ${settings}"
 
 	initialize()
 }
 
 
 def updated() {
-	log.debug "Updated with settings: ${settings}"
+	log.info "Updated with settings: ${settings}"
 
 	unsubscribe()
 	initialize()
@@ -117,7 +121,7 @@ def initialize() {
 
 
 def switchOnHandler(evt) {
-	log.debug "TRIGGERED"	
+	log.debug "Lockdown: TRIGGERED"	
 	
 	atomicState.numCycles = 0
 	
@@ -133,16 +137,16 @@ def cycleHandler () {
 	atomicState.numCycles++
 
 	if (atomicState.numCycles > maxCycles) {
-		log.debug "MAX CYCLES EXCEEDED (${maxCycles}).  If this happens regularly, you might have an unresponsive lock."
+		log.debug "Lockdown: MAX CYCLES EXCEEDED (${maxCycles}).  If this happens regularly, you might have an unresponsive lock."
 		doneHandler()
 		return
 	}
 
-	log.debug "CYCLE: ${state.numCycles}"
+	log.debug "Lockdown: CYCLE ${state.numCycles}"
 
 	// Allow for cancellation
 	if (triggeringSwitch.currentValue('switch') == "off") {
-		log.debug "CANCELLED"
+		log.debug "Lockdown: CANCELLED"
 		doneHandler()
 		return
 	}
@@ -152,14 +156,14 @@ def cycleHandler () {
 	
 	// Are we finished?
 	if (nextLockIndex == -1) {
-		log.debug "ALL LOCKS ARE LOCKED"
+		log.debug "Lockdown: ALL LOCKS ARE LOCKED"
 		doneHandler()
 		return
 	}
 
 	// Lock the next one
 	def nextLock = selectedLocks[nextLockIndex]
-	log.debug "Attempting to lock: ${nextLock.displayName}"
+	log.debug "Lockdown: ATTEMPTING TO LOCK ${nextLock.displayName}"
 	nextLock.lock()
 
 	// Start timer for the next cycle
@@ -176,14 +180,14 @@ def cycleHandler () {
 def refreshHandler() {
 	def nextLock = selectedLocks[atomicState.nextLockIndex]
 	
-	log.debug "Refreshing: ${nextLock.displayName}"
+	log.debug "Lockdown: REFRESHING ${nextLock.displayName}"
 	nextLock.refresh()
 }
 
 
 // Turn off the triggering switch once execution completes.
 def doneHandler() {
-	log.debug "DONE"
+	log.debug "Lockdown: DONE"
 	
 	triggeringSwitch.off()
 }
