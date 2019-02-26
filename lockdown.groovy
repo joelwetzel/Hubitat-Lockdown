@@ -13,6 +13,10 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+
+import groovy.json.*
+// log.debug groovy.json.JsonOutput.toJson(atomicState.lockMap)
+	
 definition(
     name: "Lockdown",
     namespace: "joelwetzel",
@@ -57,8 +61,8 @@ def cycleTime = [
 def maxCycles = [
 		name:				"maxCycles",
 		type:				"number",
-		title:				"Max Number of Cycles",
-		description:		"Maximum number of lock/retry cycles.  Recommended value: 3X the amount of locks that you are managing.",
+		title:				"Max Number of Retries per Lock",
+		description:		"Maximum number of lock/retry cycles per lock.  Recommended value: 3.",
 		required:			true
 	]
 
@@ -116,34 +120,24 @@ def updated() {
 def initialize() {
 	subscribe(triggeringSwitch, "switch.on", switchOnHandler)
 	
-	atomicState.numCycles = 0
+	atomicState.lockMap = [] as int[]
 }
 
 
 def switchOnHandler(evt) {
 	log.debug "Lockdown: TRIGGERED"	
 	
-	atomicState.numCycles = 0
+	atomicState.lockMap = [] as int[]
 	
 	cycleHandler()
 }
 
 
 // Each cycle runs like this:
-// 1) See if there's still an unlocked lock
+// 1) See if there's still an unlocked lock that hasn't exceeded the number of allowed cycles per lock
 // 2) If so, send it a lock command, then wait "Refresh Time" seconds
 // 3) Send it a refresh command, then wait "Cycle Time" seconds before starting a new cycle
 def cycleHandler () {
-	atomicState.numCycles++
-
-	if (atomicState.numCycles > maxCycles) {
-		log.debug "Lockdown: MAX CYCLES EXCEEDED (${maxCycles}).  If this happens regularly, you might have an unresponsive lock."
-		doneHandler()
-		return
-	}
-
-	log.debug "Lockdown: CYCLE ${state.numCycles}"
-
 	// Allow for cancellation
 	if (triggeringSwitch.currentValue('switch') == "off") {
 		log.debug "Lockdown: CANCELLED"
@@ -156,11 +150,10 @@ def cycleHandler () {
 	
 	// Are we finished?
 	if (nextLockIndex == -1) {
-		log.debug "Lockdown: ALL LOCKS ARE LOCKED"
 		doneHandler()
 		return
 	}
-
+	
 	// Lock the next one
 	def nextLock = selectedLocks[nextLockIndex]
 	log.debug "Lockdown: ATTEMPTING TO LOCK ${nextLock.displayName}"
@@ -196,20 +189,23 @@ def doneHandler() {
 // Find the index of the next lock that is still unlocked.
 def findNextIndex() {
 	for (int i = 0; i < selectedLocks.size(); i++) {
-		def l = selectedLocks[i];
+		def lock = selectedLocks[i];
 		
-		if (l.currentValue('lock') != "locked") {
+		// Keep track of how many attempts we've made on each lock
+		def lockMap = atomicState.lockMap
+		def tryCount = lockMap[i]
+		if (!tryCount) {
+			tryCount = 0
+		}
+		
+		if (lock.currentValue('lock') != "locked" && tryCount < maxCycles) {
+			lockMap[i] = tryCount + 1
+			atomicState.lockMap = lockMap
+			
 			return i
 		}
 	}
 	
 	return -1
 }
-
-
-
-
-
-
-
 
