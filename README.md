@@ -17,7 +17,7 @@ Therefore, I made an app that could methodically lock/refresh each lock, one-by-
 5. Choose Lockdown
 6. Choose a triggering switch.  Lockdown will watch this switch and activate when the switch triggers to on.
 7. Choose locks for Lockdown to manage.
-8. Adjust parameters.  Recommend: Set "Max Number of Retries" to 2x the number of locks that you are managing.
+8. Adjust parameters.
 9. Click done
 
 ## Recommended Integration with Alexa
