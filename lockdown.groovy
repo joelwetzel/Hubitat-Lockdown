@@ -51,7 +51,7 @@ def selectedLocks = [
 def cycleTime = [
 		name:				"cycleTime",
 		type:				"number",
-		title:				"Cycle Time",
+		title:				"Delay between lock attempts",
 		description:		"Set the amount of time to wait in between locking different locks (or retrying).  If set too low, The z-wave messages from the locks won't have time to propagate. Recommended value: 5",
 		defaultValue:		5,
 		required:			true
@@ -61,7 +61,7 @@ def cycleTime = [
 def maxCycles = [
 		name:				"maxCycles",
 		type:				"number",
-		title:				"Max Number of Retries per Lock",
+		title:				"Max number of retries per Lock",
 		description:		"Maximum number of lock/retry cycles per lock.  Recommended value: 3.",
 		required:			true
 	]
@@ -70,7 +70,7 @@ def maxCycles = [
 def forceRefresh = [
 		name:				"forceRefresh",
 		type:				"bool",
-		title:				"Force Refreshes after Locking?",
+		title:				"Auto-refresh after Locking?",
 		defaultValue:		true,
 		required:			true
 	]
@@ -79,7 +79,7 @@ def forceRefresh = [
 def refreshTime = [
 		name:				"refreshTime",
 		type:				"number",
-		title:				"Delay before Refresh",
+		title:				"Delay before auto-refreshing",
 		description:		"Not all locks perfectly report status updates.  A manual refresh helps.  Set the amount of time to wait after sending a lock command, to send a followup refresh command. Recommend: 5",
 		defaultValue:		5,
 		required:			true
@@ -87,18 +87,34 @@ def refreshTime = [
 
 
 preferences {
-	section("<b>Devices</b>") {
-		input triggeringSwitch
-		input selectedLocks	
+	page(name: "pageOne", title: "", uninstall: true) {
+		section(getFormat("title", "${app.label}")) {
+				paragraph "Automatically lock a group of doors, with auto-refresh, timing delays, and retries.  It is triggered by a triggering switch (which can be real or virtual).  The triggering switch is reset when the process is complete."
+			}
+		section("<b>Devices</b>") {
+			input triggeringSwitch
+			input selectedLocks	
+		}
+		section("<b>Cycles</b>") {
+			input cycleTime
+			input maxCycles
+		}
+		section("<b>Refreshes</b>") {
+			input forceRefresh
+			input refreshTime
+		}
+		section() {
+			paragraph getFormat("line")
+			paragraph "<div style='color:#1A77C9;text-align:center'>Lockdown - @joelwetzel<br><a href='https://github.com/joelwetzel/' target='_blank'>Click here for more Hubitat apps/drivers on my GitHub!</a></div>"
+		}      
 	}
-	section("<b>Cycles</b>") {
-		input cycleTime
-		input maxCycles
-	}
-	section("<b>Refreshes</b>") {
-		input forceRefresh
-		input refreshTime
-	}
+}
+
+
+def getFormat(type, myText=""){
+	if(type == "header-green") return "<div style='color:#ffffff;font-weight: bold;background-color:#81BC00;border: 1px solid;box-shadow: 2px 3px #A9A9A9'>${myText}</div>"
+    if(type == "line") return "\n<hr style='background-color:#1A77C9; height: 1px; border: 0;'></hr>"
+	if(type == "title") return "<h2 style='color:#1A77C9;font-weight: bold'>${myText}</h2>"
 }
 
 
@@ -208,4 +224,6 @@ def findNextIndex() {
 	
 	return -1
 }
+
+
 
