@@ -70,7 +70,7 @@ def maxCycles = [
 def forceRefresh = [
 		name:				"forceRefresh",
 		type:				"bool",
-		title:				"Auto-refresh after Locking?",
+		title:				"Auto-refresh each lock after it is locked?",
 		defaultValue:		true,
 		required:			true
 	]
