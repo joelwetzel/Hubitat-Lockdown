@@ -87,7 +87,7 @@ def refreshTime = [
 
 
 preferences {
-	page(name: "pageOne", title: "", uninstall: true) {
+	page(name: "pageOne", title: "", install:true, uninstall: true) {
 		section(getFormat("title", "${app.label}")) {
 				paragraph "Automatically lock a group of doors, with auto-refresh, timing delays, and retries.  It is triggered by a triggering switch (which can be real or virtual).  The triggering switch is reset when the process is complete."
 			}
