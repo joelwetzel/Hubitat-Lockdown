@@ -10,6 +10,11 @@ An app for Hubitat (It will probably work with SmartThings too) that will reliab
 Therefore, I made an app that could methodically lock/refresh each lock, one-by-one, with retries in case of errors.
 
 ## Install Instructions
+
+The best way to install this code is by using [Hubitat Package Manager](https://community.hubitat.com/t/beta-hubitat-package-manager).
+
+However, if you must install manually:
+
 1. On your Hubitat hub, go to the Apps Code screen
 2. Add a New App
 3. Copy in the contents of lockdown.groovy and Save
