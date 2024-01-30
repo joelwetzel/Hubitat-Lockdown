@@ -72,7 +72,7 @@ class BehaviorTests extends Specification {
     }
 
     void "Triggers are logged"() {
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         then:
@@ -80,7 +80,7 @@ class BehaviorTests extends Specification {
     }
 
     void "Triggering will immediately lock the first lock and schedule a refresh and the next cycle"() {
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         then:
@@ -95,7 +95,7 @@ class BehaviorTests extends Specification {
     }
 
     void "The refreshHandler will fire 2 seconds after the cycleHandler"() {
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         then:
@@ -109,7 +109,7 @@ class BehaviorTests extends Specification {
     }
 
     void "After the cycle time, the next lock will be locked and a refresh and the next cycle will be scheduled"() {
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         then: "1st cycle"
@@ -133,7 +133,7 @@ class BehaviorTests extends Specification {
     }
 
     void "Two cycles will result in the third lock being locked"() {
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         then: "1st cycle"
@@ -175,7 +175,7 @@ class BehaviorTests extends Specification {
     }
 
     void "Can be cancelled mid-cycle"() {
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         then: "1st cycle"
@@ -184,7 +184,7 @@ class BehaviorTests extends Specification {
         lockFixture2.state.lock == 'unlocked'
         lockFixture3.state.lock == 'unlocked'
 
-        when:
+        when: "App is cancelled"
         switchFixture.off()
 
         and:
@@ -202,7 +202,7 @@ class BehaviorTests extends Specification {
     }
 
     void "Simplified test that advances to the final state"() {
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         and:
@@ -222,7 +222,7 @@ class BehaviorTests extends Specification {
         given:
         lockFixture2.setCommandsToIgnore(5)
 
-        when:
+        when: "App is triggered"
         switchFixture.on()
 
         and: "We need extra cycles, because it's going to retry the second lock 2 more times"
@@ -233,7 +233,7 @@ class BehaviorTests extends Specification {
         timekeeper.advanceMillis(5001)
         timekeeper.advanceMillis(5001)
 
-        then:
+        then: "The second lock will be skipped, but the first and third will still be locked"
         1 * log.debug('Lockdown: DONE')
         lockFixture1.state.lock == 'locked'
         lockFixture2.state.lock == 'unlocked'
