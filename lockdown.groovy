@@ -60,6 +60,7 @@ def maxCycles = [
         type:               'number',
         title:              'Max number of retries per Lock',
         description:        'Maximum number of lock/retry cycles per lock.  Recommended value: 3.',
+        defaultValue:       3,
         required:           true
     ]
 
@@ -75,13 +76,13 @@ def refreshTime = [
         name:               'refreshTime',
         type:               'number',
         title:              'Delay before auto-refreshing',
-        description:        'Not all locks perfectly report status updates.  A manual refresh helps.  Set the amount of time to wait after sending a lock command, to send a followup refresh command. Recommend: 5',
-        defaultValue:       5,
+        description:        'Not all locks perfectly report status updates.  A manual refresh helps.  Set the amount of time to wait after sending a lock command, to send a followup refresh command. Recommend: 2',
+        defaultValue:       2,
         required:           true
     ]
 
 preferences {
-    page(name: 'pageOne', title: '', install: true, uninstall: true) {
+    page(name: 'pageOne', title: 'Preferences', install: true, uninstall: true) {
         section(getFormat('title', "${app.label}")) {
                 paragraph 'Automatically lock a group of doors, with auto-refresh, timing delays, and retries.  It is triggered by a triggering switch (which can be real or virtual).  The triggering switch is reset when the process is complete.'
         }
@@ -131,15 +132,15 @@ def updated() {
 }
 
 def initialize() {
-    subscribe(triggeringSwitch, 'switch.on', switchOnHandler)
+    subscribe(triggeringSwitch, 'switch.on', 'switchOnHandler')
 
-    atomicState.lockMap = [] as int[]
+    atomicState.lockMap = new int[selectedLocks.size()]
 }
 
 def switchOnHandler(evt) {
     log.debug 'Lockdown: TRIGGERED'
 
-    atomicState.lockMap = [] as int[]
+    atomicState.lockMap = new int[selectedLocks.size()]
 
     cycleHandler()
 }
@@ -148,7 +149,7 @@ def switchOnHandler(evt) {
 // 1) See if there's still an unlocked lock that hasn't exceeded the number of allowed cycles per lock
 // 2) If so, send it a lock command, then wait "Refresh Time" seconds
 // 3) Send it a refresh command, then wait "Cycle Time" seconds before starting a new cycle
-def cycleHandler() {
+def cycleHandler(data = null) {
     // Allow for cancellation
     if (triggeringSwitch.currentValue('switch') == 'off') {
         log.debug 'Lockdown: CANCELLED'
@@ -180,7 +181,7 @@ def cycleHandler() {
     }
 }
 
-def refreshHandler() {
+def refreshHandler(data = null) {
     def nextLock = selectedLocks[atomicState.nextLockIndex]
 
     log.debug "Lockdown: REFRESHING ${nextLock.displayName}"
@@ -201,7 +202,7 @@ def findNextIndex() {
 
         // Keep track of how many attempts we've made on each lock
         def lockMap = atomicState.lockMap
-        def tryCount = lockMap[i] ?: 0
+        def tryCount = lockMap.size() > i ? lockMap[i] : 0
 
         if (lock.currentValue('lock') != 'locked' && tryCount < maxCycles) {
             lockMap[i] = tryCount + 1
