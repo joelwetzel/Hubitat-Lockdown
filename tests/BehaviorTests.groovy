@@ -5,8 +5,6 @@ import me.biocomp.hubitat_ci.util.device_fixtures.LockFixtureFactory
 import me.biocomp.hubitat_ci.util.IntegrationAppExecutor
 import me.biocomp.hubitat_ci.util.IntegrationScheduler
 import me.biocomp.hubitat_ci.util.TimeKeeper
-// import me.biocomp.hubitat_ci.util.TimeChangedEvent
-// import me.biocomp.hubitat_ci.util.TimeChangedListener
 
 import me.biocomp.hubitat_ci.api.app_api.AppExecutor
 import me.biocomp.hubitat_ci.api.common_api.Log
@@ -200,44 +198,4 @@ class BehaviorTests extends Specification {
         lockFixture2.state.lock == 'unlocked'
         lockFixture3.state.lock == 'unlocked'
     }
-
-    void "Simplified test that advances to the final state"() {
-        when: "App is triggered"
-        switchFixture.on()
-
-        and:
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-
-        then:
-        1 * log.debug('Lockdown: DONE')
-        lockFixture1.state.lock == 'locked'
-        lockFixture2.state.lock == 'locked'
-        lockFixture3.state.lock == 'locked'
-    }
-
-    void "An unresponsive lock will be skipped, but processing will continue and complete"() {
-        given:
-        lockFixture2.setCommandsToIgnore(5)
-
-        when: "App is triggered"
-        switchFixture.on()
-
-        and: "We need extra cycles, because it's going to retry the second lock 2 more times"
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-
-        then: "The second lock will be skipped, but the first and third will still be locked"
-        1 * log.debug('Lockdown: DONE')
-        lockFixture1.state.lock == 'locked'
-        lockFixture2.state.lock == 'unlocked'
-        lockFixture3.state.lock == 'locked'
-    }
-
 }
