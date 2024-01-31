@@ -45,8 +45,8 @@ class OldLockTests extends Specification {
     def switchFixture = SwitchFixtureFactory.create('s1')
 
     def lockFixture1 = LockFixtureFactory.create('l1')
-    def lockFixture2 = LockFixtureFactory.create('l1')
-    def lockFixture3 = LockFixtureFactory.create('l1')
+    def lockFixture2 = LockFixtureFactory.create('l2')
+    def lockFixture3 = LockFixtureFactory.create('l3')
 
     def appScript = sandbox.run(api: appExecutor,
         validationFlags: [Flags.AllowWritingToSettings],
