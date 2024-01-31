@@ -33,8 +33,7 @@ class OldLockTests extends Specification {
     def appState = [:]
     def appAtomicState = [:]
 
-    TimeKeeper timekeeper = new TimeKeeper()
-    IntegrationScheduler scheduler = new IntegrationScheduler(timekeeper)
+    IntegrationScheduler scheduler = new IntegrationScheduler()
 
     def appExecutor = Spy(IntegrationAppExecutor, constructorArgs: [scheduler: scheduler]) {
         _*getLog() >> log
@@ -55,19 +54,19 @@ class OldLockTests extends Specification {
 
     def setup() {
         TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
+        TimeKeeper.removeAllListeners()
 
         switchFixture.initialize(appExecutor, [switch:"off"])
         lockFixture1.initialize(appExecutor, [lock:"unlocked"])
         lockFixture2.initialize(appExecutor, [lock:"unlocked"])
         lockFixture3.initialize(appExecutor, [lock:"unlocked"])
 
-        timekeeper.install()
         appExecutor.setSubscribingScript(appScript)
         appScript.installed()
     }
 
     def cleanup() {
-        timekeeper.uninstall()
+        TimeKeeper.removeAllListeners()
     }
 
     void "Simplified test that advances to the final state"() {
@@ -75,10 +74,10 @@ class OldLockTests extends Specification {
         switchFixture.on()
 
         and:
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then:
         1 * log.debug('Lockdown: DONE')
@@ -95,12 +94,12 @@ class OldLockTests extends Specification {
         switchFixture.on()
 
         and: "We need extra cycles, because it's going to retry the second lock 2 more times"
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then: "The second lock will be skipped, but the first and third will still be locked"
         1 * log.debug('Lockdown: DONE')
@@ -120,15 +119,15 @@ class OldLockTests extends Specification {
         switchFixture.on()
 
         and: "We need extra cycles, because it's going to retry all 3 locks 3 times each"
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then: "The app will finish, but the locks will still be in their initial states"
         1 * log.debug('Lockdown: DONE')
@@ -148,10 +147,10 @@ class OldLockTests extends Specification {
         switchFixture.on()
 
         and: "Should only take normal amount of time, because the refreshes should complete before the next cycles."
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then: "The app will finish, and the locks will be successfully locked."
         1 * log.debug('Lockdown: DONE')

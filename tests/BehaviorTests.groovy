@@ -33,8 +33,7 @@ class BehaviorTests extends Specification {
     def appState = [:]
     def appAtomicState = [:]
 
-    TimeKeeper timekeeper = new TimeKeeper()
-    IntegrationScheduler scheduler = new IntegrationScheduler(timekeeper)
+    IntegrationScheduler scheduler = new IntegrationScheduler()
 
     def appExecutor = Spy(IntegrationAppExecutor, constructorArgs: [scheduler: scheduler]) {
         _*getLog() >> log
@@ -54,19 +53,19 @@ class BehaviorTests extends Specification {
 
     def setup() {
         TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
+        TimeKeeper.removeAllListeners()
 
         switchFixture.initialize(appExecutor, [switch:"off"])
         lockFixture1.initialize(appExecutor, [lock:"unlocked"])
         lockFixture2.initialize(appExecutor, [lock:"unlocked"])
         lockFixture3.initialize(appExecutor, [lock:"unlocked"])
 
-        timekeeper.install()
         appExecutor.setSubscribingScript(appScript)
         appScript.installed()
     }
 
     def cleanup() {
-        timekeeper.uninstall()
+        TimeKeeper.removeAllListeners()
     }
 
     void "Triggers are logged"() {
@@ -100,7 +99,7 @@ class BehaviorTests extends Specification {
         1 * appExecutor.runIn(2, 'refreshHandler')
 
         when:
-        timekeeper.advanceMillis(2001)
+        TimeKeeper.advanceMillis(2001)
 
         then:
         1 * log.debug("Lockdown: REFRESHING ${lockFixture1.displayName}")
@@ -117,7 +116,7 @@ class BehaviorTests extends Specification {
         lockFixture3.state.lock == 'unlocked'
 
         when:
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then: "2nd cycle"
         1 * log.debug("Lockdown: ATTEMPTING TO LOCK ${lockFixture2.displayName}")
@@ -141,7 +140,7 @@ class BehaviorTests extends Specification {
         lockFixture3.state.lock == 'unlocked'
 
         when:
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then: "2nd cycle"
         1 * log.debug("Lockdown: ATTEMPTING TO LOCK ${lockFixture2.displayName}")
@@ -150,7 +149,7 @@ class BehaviorTests extends Specification {
         lockFixture3.state.lock == 'unlocked'
 
         when:
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then: "3rd cycle"
         1 * log.debug("Lockdown: ATTEMPTING TO LOCK ${lockFixture3.displayName}")
@@ -163,7 +162,7 @@ class BehaviorTests extends Specification {
         1 * appExecutor.runIn(5, 'cycleHandler')
 
         when:
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then: "No more locks to lock.  Finish and reset the triggering switch."
         1 * log.debug('Lockdown: DONE')
@@ -186,7 +185,7 @@ class BehaviorTests extends Specification {
         switchFixture.off()
 
         and:
-        timekeeper.advanceMillis(5001)
+        TimeKeeper.advanceMillis(5001)
 
         then:
         0 * log.debug("Lockdown: ATTEMPTING TO LOCK ${lockFixture2.displayName}")

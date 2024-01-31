@@ -33,8 +33,7 @@ class PrivateMethodTests extends Specification {
     def appState = [:]
     def appAtomicState = [:]
 
-    TimeKeeper timekeeper = new TimeKeeper()
-    IntegrationScheduler scheduler = new IntegrationScheduler(timekeeper)
+    IntegrationScheduler scheduler = new IntegrationScheduler()
 
     def appExecutor = Spy(IntegrationAppExecutor, constructorArgs: [scheduler: scheduler]) {
         _*getLog() >> log
@@ -54,19 +53,19 @@ class PrivateMethodTests extends Specification {
 
     def setup() {
         TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
+        TimeKeeper.removeAllListeners()
 
         switchFixture.initialize(appExecutor, [switch:"off"])
         lockFixture1.initialize(appExecutor, [lock:"unlocked"])
         lockFixture2.initialize(appExecutor, [lock:"unlocked"])
         lockFixture3.initialize(appExecutor, [lock:"unlocked"])
 
-        timekeeper.install()
         appExecutor.setSubscribingScript(appScript)
         appScript.installed()
     }
 
     def cleanup() {
-        timekeeper.uninstall()
+        TimeKeeper.removeAllListeners()
     }
 
     void "findNextIndex returns 0 when all locks are unlocked"() {
