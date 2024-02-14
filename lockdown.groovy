@@ -1,5 +1,5 @@
 /**
- *  Lockdown v1.0
+ *  Lockdown v1.1
  *
  *  Copyright 2019 Joel Wetzel
  *

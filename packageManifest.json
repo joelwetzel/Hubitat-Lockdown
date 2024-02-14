@@ -2,10 +2,10 @@
 	"packageName": "Lockdown",
 	"minimumHEVersion": "2.2.1",
 	"author": "Joel Wetzel",
-	"version": "1.01",
+	"version": "1.1",
 	"dateReleased": "2020-07-16",
 	"licenseFile": "https://raw.githubusercontent.com/joelwetzel/Hubitat-Auto-Shades/master/LICENSE",
-	"releaseNotes": "Initial release through Hubitat Package Manager.",
+	"releaseNotes": "Adds unit tests for QA.",
 	"communityLink": "https://community.hubitat.com/t/release-lockdown",
 	"documentationLink": "https://github.com/joelwetzel/Hubitat-Lockdown",
 	"apps" : [
