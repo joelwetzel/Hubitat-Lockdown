@@ -77,7 +77,7 @@ def refreshTime = [
         type:               'number',
         title:              'Delay before auto-refreshing',
         description:        'Not all locks perfectly report status updates.  A manual refresh helps.  Set the amount of time to wait after sending a lock command, to send a followup refresh command. Recommend: 2',
-        defaultValue:       2,
+        defaultValue:       3,
         required:           true
     ]
 
