@@ -1,4 +1,7 @@
 # Lockdown app for Hubitat
+
+[![CI](https://github.com/joelwetzel/Hubitat-Lockdown/actions/workflows/ci.yml/badge.svg)](https://github.com/joelwetzel/Hubitat-Lockdown/actions/workflows/ci.yml)
+
 An app for Hubitat (It will probably work with SmartThings too) that will reliably lock all selected locks when a specified switch is triggered.
 
 ## Reason for using Lockdown

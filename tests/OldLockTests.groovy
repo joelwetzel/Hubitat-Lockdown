@@ -51,7 +51,7 @@ class OldLockTests extends IntegrationAppSpecification {
 
     void "An unresponsive lock will be skipped, but processing will continue and complete"() {
         given:
-        lockFixture2.setCommandsToIgnore(5)
+        lockFixture2.setNumOfCommandsToIgnore(5)
 
         when: "App is triggered"
         switchFixture.on()
